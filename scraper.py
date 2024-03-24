@@ -1,5 +1,6 @@
 from requests_html import HTMLSession, AsyncHTMLSession
 from bs4 import BeautifulSoup
+import ast
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2810.1 Safari/537.36'}
 
@@ -50,23 +51,35 @@ def searchGundamPlanet(session, model, grade):
     
     page = session.get(URL, headers=headers)
     
-    html = page.html.find("pre")[0]
+    page.html.render()
     
-    #page.html.render()
+    try:
+        
+        print(ast.literal_eval(page.html.text)["products"])
+        html = "<html>" + ast.literal_eval(page.html.text)["products"] + "</html>"
+        
+        html = html.replace("\\", "")
+        
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        models = []
+        
+        results = soup.select('.product-item-info')
     
-    models = []
+
     
-    results = page.html.find("div[id^=product-item-info_]")
-    
-    i=0
-    while(i<len(results) and i<10):
-        model = results[i]
-        name = model.find(".product-item-link")[0].text.strip()
-        link = model.find(".product-item-link")[0].attrs['href']
-        price = model.find(".price")[0].text.strip()
-        models.append({"name":name,"price":price, "link": link})
-        i+=1
-    return models
+        i=0
+        while(i<len(results) and i<10):
+            model = results[i]
+            name = model.select(".product-item-link")[0].text.strip()
+            link = model.select(".product-item-link")[0].attrs['href']
+            price = model.select(".price")[0].text.strip()
+            models.append({"name":name,"price":price, "link": link})
+            i+=1
+        return models
+    except Exception as e:
+        print(e)
 
 
 model = input('Enter name of model: ')
@@ -79,10 +92,10 @@ while(grade!='RG' and grade!='HG' and grade!='MG' and grade!='PG'):
 
 session = HTMLSession()
 
-#results = searchHLJ(session, model, grade)
+results = searchHLJ(session, model, grade)
 results2 = searchGundamPlanet(session, model, grade)
 
-#print(results)
-print (results2)
+print(results)
+print(results2)
 
 input('Press ENTER to exit')
