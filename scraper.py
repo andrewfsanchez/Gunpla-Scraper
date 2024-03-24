@@ -55,7 +55,6 @@ def searchGundamPlanet(session, model, grade):
     
     try:
         
-        print(ast.literal_eval(page.html.text)["products"])
         html = "<html>" + ast.literal_eval(page.html.text)["products"] + "</html>"
         
         html = html.replace("\\", "")
